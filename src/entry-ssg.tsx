@@ -4,7 +4,7 @@ import {
   createStaticHandler,
   createStaticRouter,
   StaticRouterProvider,
-} from 'react-router-dom/server';
+} from 'react-router';
 import { routes } from './routes';
 import { games, categories } from './data/games';
 import { ssrHead, resetSSRHead, renderHeadTags } from './lib/seo';
