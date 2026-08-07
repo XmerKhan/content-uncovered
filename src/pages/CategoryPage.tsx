@@ -42,7 +42,7 @@ export default function CategoryPage() {
     description: seoDescription,
     url: categoryUrl,
     isPartOf: { '@type': 'WebSite', name: SITE_NAME, url: SITE_ORIGIN },
-  } : null;
+  } : undefined;
 
   useSEO({
     title: seoTitle,

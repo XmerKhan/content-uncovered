@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect } from 'react';
-import { Shield, CheckCircle2, XCircle, AlertTriangle } from 'lucide-react';
+import { Shield, CheckCircle2, AlertTriangle } from 'lucide-react';
 import type { GameMeta } from '../data/games';
 import Leaderboard from '../components/Leaderboard';
 import Confetti from '../components/Confetti';

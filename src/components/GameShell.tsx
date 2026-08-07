@@ -78,14 +78,17 @@ export default function GameShell({ game, component }: GameShellProps) {
     {
       '@context': 'https://schema.org',
       '@type': 'FAQPage',
-      mainEntity: faqs.map((faq) => ({
-        '@type': 'Question',
-        name: faq.question ?? faq.name,
-        acceptedAnswer: {
-          '@type': 'Answer',
-          text: faq.answer ?? faq.acceptedAnswer.text,
-        },
-      })),
+      mainEntity: faqs.map((faq) => {
+        const f = faq as { question?: string; answer?: string; name?: string; acceptedAnswer?: { text: string } };
+        return {
+          '@type': 'Question',
+          name: f.question ?? f.name ?? '',
+          acceptedAnswer: {
+            '@type': 'Answer',
+            text: f.answer ?? f.acceptedAnswer?.text ?? '',
+          },
+        };
+      }),
     },
     {
       '@context': 'https://schema.org',
