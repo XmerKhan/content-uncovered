@@ -1,85 +1,35 @@
-import React from 'react';
-import { Building2, Home, PiggyBank, Shield, Umbrella, TrendingUp, TrendingDown, GitFork, Mountain } from 'lucide-react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { Building2, Home, PiggyBank, Shield, Umbrella, TrendingUp, GitFork, Mountain, Gauge } from 'lucide-react';
 import { getPlayerAvatar } from '../lib/financeGameScene';
 
-export type FinanceGameSceneId =
-  | 'budget-master'
-  | 'stock-market-simulator'
-  | 'save-or-spend'
-  | 'credit-score-climb'
-  | 'rent-vs-buy'
-  | 'retirement-countdown'
-  | 'emergency-fund-builder'
-  | 'insurance-matcher';
+export type FinanceGameSceneId = 'budget-master'|'stock-market-simulator'|'save-or-spend'|'credit-score-climb'|'rent-vs-buy'|'retirement-countdown'|'emergency-fund-builder'|'insurance-matcher';
 
-const themes = {
-  'budget-master': { sky: '#3f9fb0', ground: '#4f9d50', label: 'Rent Bot', icon: Home, accent: '#dff7ff' },
-  'stock-market-simulator': { sky: '#101b36', ground: '#27365b', label: 'Bull + Bear', icon: TrendingUp, accent: '#8be9fd' },
-  'save-or-spend': { sky: '#6d9fbd', ground: '#537d52', label: 'Save / Spend', icon: GitFork, accent: '#ffe28a' },
-  'credit-score-climb': { sky: '#7899b3', ground: '#58754e', label: 'Score Peak', icon: Mountain, accent: '#f4d58a' },
-  'rent-vs-buy': { sky: '#7ea8bd', ground: '#68795b', label: 'Rent / Buy', icon: Building2, accent: '#ffe8ad' },
-  'retirement-countdown': { sky: '#e89a70', ground: '#b98752', label: 'Nest Egg', icon: PiggyBank, accent: '#ffe4a8' },
-  'emergency-fund-builder': { sky: '#66788d', ground: '#53646c', label: 'Safety Shield', icon: Shield, accent: '#dce8f0' },
-  'insurance-matcher': { sky: '#9bc7d2', ground: '#719a67', label: 'Umbrella', icon: Umbrella, accent: '#f4ffff' },
-} as const;
+type Theme={sky:string;ground:string;title:string;subtitle:string;icon:React.ComponentType<any>;opponent:string};
+const themes:Record<FinanceGameSceneId,Theme>={
+ 'budget-master':{sky:'#65b7c4',ground:'#4f9d50',title:'Budget Town',subtitle:'Balance your month',icon:Home,opponent:'Rent Bot'},
+ 'stock-market-simulator':{sky:'#101a35',ground:'#24355c',title:'Market Arena',subtitle:'React to every market move',icon:TrendingUp,opponent:'Bull / Bear'},
+ 'save-or-spend':{sky:'#739fba',ground:'#527c55',title:'Decision Road',subtitle:'Your choice changes the journey',icon:GitFork,opponent:'Choice Gate'},
+ 'credit-score-climb':{sky:'#718fa7',ground:'#526e4c',title:'Credit Mountain',subtitle:'Good choices move you higher',icon:Mountain,opponent:'Score Peak'},
+ 'rent-vs-buy':{sky:'#7ba5ba',ground:'#657958',title:'Home Valley',subtitle:'Choose the path that fits',icon:Building2,opponent:'Rent / Buy'},
+ 'retirement-countdown':{sky:'#e39a70',ground:'#ae814d',title:'Retirement Coast',subtitle:'Build your nest egg',icon:PiggyBank,opponent:'Nest Egg'},
+ 'emergency-fund-builder':{sky:'#637689',ground:'#4d6269',title:'Storm Shelter',subtitle:'Build protection before the storm',icon:Shield,opponent:'Safety Shield'},
+ 'insurance-matcher':{sky:'#9ccbd3',ground:'#719866',title:'Protection Park',subtitle:'Match protection to the risk',icon:Umbrella,opponent:'Umbrella Guide'}
+};
 
-function BackgroundArt({ game }: { game: FinanceGameSceneId }) {
-  return <svg className="absolute inset-0 h-full w-full" viewBox="0 0 900 240" preserveAspectRatio="none" aria-hidden="true">
-    {game === 'stock-market-simulator' && <>
-      <path d="M0 185 C110 150 130 205 225 145 S360 115 430 155 S535 190 620 100 S770 125 900 50" fill="none" stroke="rgba(139,233,253,.42)" strokeWidth="5" strokeDasharray="10 8" />
-      <path d="M0 210H900" stroke="rgba(255,255,255,.1)" strokeWidth="2" />
-    </>}
-    {game === 'save-or-spend' && <>
-      <path d="M450 240V175L300 72M450 175L600 72" fill="none" stroke="rgba(55,55,65,.72)" strokeWidth="56" strokeLinecap="round" />
-      <path d="M450 240V175L300 72M450 175L600 72" fill="none" stroke="rgba(255,255,255,.6)" strokeWidth="3" strokeDasharray="9 10" />
-    </>}
-    {game === 'credit-score-climb' && <>
-      <path d="M0 205L150 75L245 155L355 35L505 175L635 65L760 155L850 85L900 125V240H0Z" fill="rgba(39,66,78,.42)" />
-      <path d="M0 220L205 120L320 190L475 95L610 195L750 115L900 185V240H0Z" fill="rgba(32,52,61,.28)" />
-    </>}
-    {game === 'rent-vs-buy' && <>
-      <g fill="rgba(32,45,58,.38)"><path d="M55 180V105L130 45L205 105V180Z"/><path d="M695 180V105L770 45L845 105V180Z"/></g>
-      <path d="M450 80V190" stroke="rgba(255,255,255,.25)" strokeWidth="2" strokeDasharray="6 7" />
-    </>}
-    {game === 'retirement-countdown' && <>
-      <circle cx="740" cy="65" r="38" fill="rgba(255,232,168,.65)" />
-      <path d="M785 210Q805 130 795 75M795 105Q750 72 730 70M795 115Q835 88 850 70M795 125Q835 125 870 110" fill="none" stroke="rgba(83,70,54,.5)" strokeWidth="7" strokeLinecap="round" />
-    </>}
-    {game === 'emergency-fund-builder' && <>
-      <path d="M690 38L810 72V135C810 190 750 215 750 215C750 215 690 190 690 135Z" fill="rgba(224,240,249,.18)" stroke="rgba(224,240,249,.55)" strokeWidth="7" />
-      <path d="M80 55Q130 25 180 55M155 90Q205 60 255 90M55 125Q110 95 165 125" fill="none" stroke="rgba(220,232,240,.25)" strokeWidth="8" strokeLinecap="round" />
-    </>}
-    {game === 'insurance-matcher' && <>
-      <path d="M690 175V105Q690 65 730 65Q770 65 770 105V175" fill="none" stroke="rgba(40,72,78,.5)" strokeWidth="7" />
-      <path d="M650 108Q730 28 810 108Q770 92 730 112Q690 92 650 108Z" fill="rgba(255,255,255,.42)" />
-    </>}
-    {game === 'budget-master' && <circle cx="120" cy="55" r="30" fill="rgba(255,255,255,.13)" />}
-  </svg>;
-}
+function Art({game,activity}:{game:FinanceGameSceneId;activity:number}){const t=themes[game];return <div className="absolute inset-0 overflow-hidden pointer-events-none"><svg viewBox="0 0 900 330" preserveAspectRatio="none" className="absolute inset-0 w-full h-full">
+ <defs><linearGradient id={'fg-'+game} x1="0" x2="0" y1="0" y2="1"><stop offset="0" stopColor="rgba(255,255,255,.13)"/><stop offset="1" stopColor="rgba(0,0,0,.1)"/></linearGradient></defs><rect width="900" height="330" fill={'url(#fg-'+game+')'}/>
+ {game==='stock-market-simulator'&&<path d="M0 250C100 180 150 270 240 205S370 170 450 225S550 265 640 130S780 175 900 55" fill="none" stroke="rgba(114,224,192,.55)" strokeWidth="7" strokeDasharray="12 10"/>}
+ {game==='save-or-spend'&&<><path d="M450 330V240L285 100M450 240L615 100" fill="none" stroke="rgba(45,55,60,.72)" strokeWidth="70" strokeLinecap="round"/><path d="M450 330V240L285 100M450 240L615 100" fill="none" stroke="white" strokeOpacity=".6" strokeWidth="4" strokeDasharray="10 12"/></>}
+ {game==='credit-score-climb'&&<><path d="M0 300L145 75L260 220L390 35L535 240L680 85L900 250V330H0Z" fill="rgba(30,55,65,.4)"/><path d="M100 310C190 260 220 210 315 205S430 135 530 125S650 75 760 55" fill="none" stroke="rgba(244,213,138,.75)" strokeWidth="8" strokeDasharray="16 10"/></>}
+ {game==='rent-vs-buy'&&<><path d="M35 285V145L125 65L215 145V285ZM685 285V145L775 65L865 145V285Z" fill="rgba(30,45,55,.4)"/><path d="M450 60V290" stroke="white" strokeOpacity=".25" strokeWidth="3" strokeDasharray="8 8"/></>}
+ {game==='retirement-countdown'&&<><circle cx="750" cy="70" r="50" fill="rgba(255,230,160,.6)"/><path d="M790 310Q815 190 800 90M800 155Q745 110 720 110M800 185Q850 150 875 120M800 220Q850 220 885 200" fill="none" stroke="rgba(80,65,50,.5)" strokeWidth="10" strokeLinecap="round"/></>}
+ {game==='emergency-fund-builder'&&<><path d="M670 35L825 80V175C825 255 748 300 748 300C748 300 670 255 670 175Z" fill="rgba(225,242,250,.14)" stroke="rgba(225,242,250,.6)" strokeWidth="9"/><path d="M50 70Q120 25 190 70M130 120Q200 75 270 120" fill="none" stroke="rgba(220,232,240,.25)" strokeWidth="12" strokeLinecap="round"/></>}
+ {game==='insurance-matcher'&&<><path d="M720 300V145Q720 85 785 85Q850 85 850 145V300" fill="none" stroke="rgba(40,72,78,.5)" strokeWidth="11"/><path d="M650 155Q785 20 920 155Q850 125 785 165Q715 125 650 155Z" fill="rgba(255,255,255,.45)"/></>}
+ {game==='budget-master'&&<><circle cx="120" cy="70" r="42" fill="rgba(255,255,255,.15)"/><path d="M55 285L130 215L205 285" fill="none" stroke="rgba(255,255,255,.25)" strokeWidth="7"/></>}
+ </svg><div className="absolute bottom-0 inset-x-0 h-12" style={{background:t.ground}}/><div className={'absolute bottom-12 left-[43%] h-4 w-24 rounded-full bg-black/20 blur-sm '+(activity?'animate-pulse':'')}/></div>}
 
-export default function FinanceGameScene({ game, username = 'Player', preview = false, children }: { game: FinanceGameSceneId; username?: string; preview?: boolean; children?: React.ReactNode }) {
-  const theme = themes[game];
-  const Icon = theme.icon;
-  const avatar = getPlayerAvatar(username || 'Player', preview ? 100 : 150);
-  return <div className="w-full">
-    <div className={`relative ${preview ? 'h-[150px]' : 'h-[230px]'} w-full overflow-hidden rounded-t-2xl`} style={{ background: theme.sky }}>
-      <BackgroundArt game={game} />
-      <div className="absolute left-1/2 top-4 z-10 -translate-x-1/2 text-center">
-        <span className="inline-block rounded-full border border-black/20 bg-black/60 px-3 py-1 text-xs font-bold text-white shadow-lg backdrop-blur-sm">{theme.label}</span>
-        <div className="mt-2 flex h-14 w-14 items-center justify-center rounded-full border-2 border-white/60 bg-white/90 shadow-lg" style={{ color: theme.ground }}><Icon size={29} strokeWidth={2.5} /></div>
-      </div>
-      <div className="absolute bottom-5 left-1/2 z-20 -translate-x-1/2 text-center">
-        <div className="relative mx-auto w-fit">
-          <img src={avatar} alt={`${username || 'Player'} avatar`} className={preview ? 'h-20 w-20' : 'h-28 w-28'} />
-          <span className="absolute -top-5 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full border border-black/20 bg-black/65 px-3 py-1 text-xs font-bold text-white shadow-lg backdrop-blur-sm">{username || 'Player'}</span>
-        </div>
-      </div>
-      <div className="absolute bottom-0 left-0 right-0 h-9" style={{ background: theme.ground }}>
-        <svg className="h-full w-full opacity-20" viewBox="0 0 120 24" preserveAspectRatio="none" aria-hidden="true"><path d="M0 18Q8 5 16 18T32 18T48 18T64 18T80 18T96 18T112 18T128 18V24H0Z" fill="white" /></svg>
-      </div>
-    </div>
-    {children && <div className="relative">{children}</div>}
-  </div>;
-}
+function signals(root:HTMLElement|null,game:FinanceGameSceneId){if(!root)return{value:35,message:'Make a move to animate the world.'};const ranges=Array.from(root.querySelectorAll('input[type="range"]')) as HTMLInputElement[];const nums=ranges.map(x=>+x.value||0);const text=root.innerText.replace(/\s+/g,' ');const m=text.match(/(?:score|credit)[^\d]{0,20}(\d{1,3})/i);if(m)return{value:Math.min(100,+m[1]),message:'Live score: '+m[1]};if(game==='budget-master'&&nums.length)return{value:Math.min(100,nums.reduce((a,b)=>a+b,0)),message:'Every slider changes your monthly balance.'};if(game==='stock-market-simulator')return{value:Math.max(20,nums[0]||45),message:'Your portfolio reacts to every market move.'};return{value:Math.max(20,Math.min(100,nums[0]||35)),message:'Your decisions are changing the game.'}}
 
-export { themes as financeGameSceneThemes };
+export default function FinanceGameScene({game,username='Player',preview=false,children}:{game:FinanceGameSceneId;username?:string;preview?:boolean;children?:React.ReactNode}){const t=themes[game],Icon=t.icon,ref=useRef<HTMLDivElement>(null);const avatar=useMemo(()=>getPlayerAvatar(username||'Player',118),[username]);const [s,setS]=useState(()=>signals(null,game));const [activity,setActivity]=useState(0);useEffect(()=>{const el=ref.current;if(!el)return;const update=()=>{setS(signals(el,game));setActivity(x=>x+1)};update();const mo=new MutationObserver(update);mo.observe(el,{subtree:true,childList:true,characterData:true});el.addEventListener('input',update,true);el.addEventListener('change',update,true);el.addEventListener('click',update,true);return()=>{mo.disconnect();el.removeEventListener('input',update,true);el.removeEventListener('change',update,true);el.removeEventListener('click',update,true)}},[game]);return <div ref={ref} className="w-full">{!preview&&<><style>{`@keyframes fgFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-7px)}}.fg-float{animation:fgFloat 2.3s ease-in-out infinite}`}</style><div className="mb-4 overflow-hidden rounded-2xl border border-black/10 shadow-lg"><div className="relative h-[300px] sm:h-[330px]" style={{background:t.sky}}><Art game={game} activity={activity}/><div className="absolute left-4 top-4 z-20 rounded-xl bg-black/40 px-3 py-2 text-white backdrop-blur-sm"><div className="flex items-center gap-2 text-sm font-extrabold"><Icon size={18}/>{t.title}</div><div className="text-[11px] text-white/80">{t.subtitle}</div></div><div className="absolute right-4 top-4 z-20 rounded-full bg-black/45 px-3 py-1.5 text-xs font-bold text-white">{t.opponent}</div><div className="absolute bottom-9 left-[12%] z-20 sm:left-[18%] fg-float"><span className="absolute -top-6 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full bg-black/65 px-2.5 py-1 text-[10px] font-bold text-white">{username}</span><img src={avatar} alt="Player" className="h-24 w-24 sm:h-28 sm:w-28 drop-shadow-xl"/></div><div className="absolute bottom-11 right-[12%] z-20 sm:right-[18%] fg-float" style={{animationDelay:'.7s'}}><div className="flex h-20 w-20 items-center justify-center rounded-full border-4 border-white/70 bg-black/25 shadow-xl"><Icon size={38} className="text-white"/></div><span className="absolute -top-6 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full bg-black/65 px-2.5 py-1 text-[10px] font-bold text-white">{t.opponent}</span></div><div className="absolute bottom-2 left-1/2 z-30 w-[72%] -translate-x-1/2 rounded-full bg-black/45 px-3 py-1.5 text-center text-[11px] font-semibold text-white backdrop-blur-sm">{s.message}</div><div className="absolute right-4 bottom-16 z-20 flex items-center gap-1.5 rounded-lg bg-black/45 px-2 py-1.5 text-white"><Gauge size={14}/><span className="text-xs font-bold">{s.value}%</span></div>{activity>1&&<div className="absolute bottom-20 left-1/2 z-30 animate-bounce text-xl">🪙</div>}</div></div></>}{children}</div>}
+
+export {themes as financeGameSceneThemes};
